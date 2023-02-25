@@ -4,7 +4,7 @@ This Jupyter notebook was is a basic dart tracker that can be used to visualize 
 This notebook, as stated before, will first go through the general locig behind how the code works and how the dart board in python was created. For those who are not interested in the technical coding aspects, all functions care called to the notebook but not written out in the notebook, making it more user friendly.
 
 <div>
-  <img src="positional_array.jpeg" alt="positional_array" style="width:40%; display:inline-block;"><img src="numvalue_array.jpeg" alt="num_score_array" style="width:40%; display:inline-block;">
+  <img src="positional_array.jpeg" alt="positional_array" style="width:40%; display:inline-block;"><img src="numvalue_array.jpeg" alt="num_score_array" style="width:46.4%; display:inline-block;">
 </div>
 
 **Figure 1**: *Left: Array displaying the different positions, such as 2X, 3X, etc. Right: Array displaying the different number values on a dartboard*
