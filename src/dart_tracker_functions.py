@@ -7,6 +7,17 @@ from numba import njit, prange
 import math
 
 def generate_position_array():
+
+    '''used to generate a 2D array to determine the poisition of each section of a standard dart board. The array is 400x450 with the center of the board being located at [200, 200]. 
+    The extra space is used to generate boxes to visualize if a dart is thrown out of bounds of bounces off the board. The values that represent each section are listed in the function.
+    The original array contains all zeros which are then replaced by values representing each different section of a dart board.
+    
+    There are no inputs for this function. The user only needs to run it and everything is self contained
+    
+    outputs:
+        score_position_array: 400x450 array representing different sections of a dart board'''
+
+
     score_position_array = np.zeros((400, 450))
 
     #cm distances that darts rings are found
@@ -36,6 +47,16 @@ def generate_position_array():
     return score_position_array
 
 def generate_number_array():
+
+    '''used to generate a 2D array to determine the number score of each section of a standard dart board. The array is 400x450 with the center of the board being located at [200, 200]. 
+    The values that represent each numbered section is the normal value found on the dart board except for the bullseye, outter bullseye, out of bounds, or a bounce, which are represented by zero.
+    The original array contains all zeros which are then replaced by values representing each different section of a dart board.
+    
+    There are no inputs for this function. The user only needs to run it and everything is self contained
+    
+    outputs:
+        score_number_array: 400x450 array representing different numbered sections of a dart board'''
+
     score_number_array = np.zeros((400, 450))
 
     #creating the second layer of the array to represent positional value
@@ -122,6 +143,22 @@ def generate_number_array():
     return score_number_array
 
 def generate_outline_array(score_position_array, score_number_array):
+
+    '''Uses the score_position_array and score_number_array to generate an outline of the dartboard for visualization purposes. First, two zero arrays of the same size as the score_position_array
+    and score_number_array are generated. This function then goes through both arrays, one number at a time.  If that number is the same as the numbers directly below, above, to the left, 
+    and to the right, the zero in the same position on the new array stays zero. If htis is not the case, this signifies that that number sits in a transition position between sections or numbers and 
+    therefore the zero in the same position on the new array becomes 1. These two arrays are then combined and a combined_array is made, coordinates are pulled, and these can be used to 
+    plot the dart board boarders in later functions.
+    
+    Inputs:
+        score_position_array: 400x450 array representing different sections of a dart board
+        score_number_array: 400x450 array representing different numbered sections of a dart board
+    
+    outputs:
+        y_coords: first dimension coodrinates for where dart board sections are located. Used to visually show dart board sections when generating a heatmap.
+        x_coords: second dimension coodrinates for where dart board sections are located. Used to visually show dart board sections when generating a heatmap.'''
+
+    
     position_outline_array = np.zeros((400, 450))
     for i in range(len(score_position_array[10:440, 0])-1):
         for j in range(len(score_position_array[0, 10:440])-1):
@@ -181,6 +218,20 @@ def generate_outline_array(score_position_array, score_number_array):
 
 @jit(nopython=True)
 def determine_position_score(prev_freq, score_position_array, score_number_array, score, position):
+
+    '''Used in the update_first_dart and update_one_dart function. Used to go through each "throw" represented in the csv file containing dart throw data.
+    Determines what position and what number value section each dart belongs to.
+    
+    Inputs:
+        prev_freq: array that is used to start the heatmap. Since this is the first dart throw, the array is unaltered and all zeros.
+        score_position_array: 400x450 array representing different sections of a dart board
+        score_number_array: 400x450 array representing different numbered sections of a dart board
+        score: value from the csv dart data file that represents what section number wise the dart landed in.
+        position: value from the csv dart data file that represents what section position wise the dart landed in.
+    
+    outputs:
+        prev_freq: 2D array that has the dartboard updated with what section the first dart was thrown into.'''
+
     for i in range(len(prev_freq[:, 0])):
         for j in range(len(prev_freq[0, :])):
             if position == 0.25 or position == 0.5:
@@ -197,17 +248,62 @@ def determine_position_score(prev_freq, score_position_array, score_number_array
     return prev_freq
     
 def update_first_dart(frequency_array, determine_position_score, score_position_array, score_number_array, score, position):
+
+    '''Used to update the frequency array for the first dart throw. This function works closly with determine_position_score. 
+
+    Inputs:
+        frequency_array: 3D array. 1st dimension represents the entire dart board for one throw. Other two dimensions are the x,y coordinates for each dart board section.
+        determine_position_score: function used to go through one 2D array (representing one dart throw) within the frequency_array and update that array.
+        prev_freq: array that is used to start the heatmap. Since this is the first dart throw, the array is unaltered and all zeros.
+        score_position_array: 400x450 array representing different sections of a dart board
+        score_number_array: 400x450 array representing different numbered sections of a dart board
+        score: value from the csv dart data file that represents what section number wise the dart landed in.
+        position: value from the csv dart data file that represents what section position wise the dart landed in.
+    
+    outputs:
+        updated_array: 3D array that has the dartboard updated with what section the first dart was thrown into.'''
+    
     prev_freq = frequency_array[0, :, :]
     updated_array = determine_position_score(prev_freq, score_position_array, score_number_array, score, position)
     
     return updated_array
    
 def update_one_dart(prev_freq, determine_position_score, score_position_array, score_number_array, score, position):
+
+    '''Used to update the frequency array for the all darts thrown after the first dart. This function works closly with determine_position_score. 
+
+    Inputs:
+        frequency_array: 3D array. 1st dimension represents the entire dart board for one throw. Other two dimensions are the x,y coordinates for each dart board section.
+        determine_position_score: function used to go through one 2D array (representing one dart throw) within the frequency_array and update that array.
+        prev_freq: array that is used to start the heatmap. Since this is the first dart throw, the array is unaltered and all zeros.
+        score_position_array: 400x450 array representing different sections of a dart board
+        score_number_array: 400x450 array representing different numbered sections of a dart board
+        score: value from the csv dart data file that represents what section number wise the dart landed in.
+        position: value from the csv dart data file that represents what section position wise the dart landed in.
+    
+    outputs:
+        updated_array: 3D array that has the dartboard updated with what section that each dart was thrown into.'''
+    
+
+
     updated_array = determine_position_score(prev_freq, score_position_array, score_number_array, score, position)
     
     return updated_array
 
 def generate_frequency_array(df, score_position_array, score_number_array):
+
+    '''Used to generate and update a 3D frequency array based on the raw dart throwing data. The first dimension represents each thrown dart. The last two dimensions
+    represent the x, y coordinates for each dart section represented by the score_poisition_array and score_number_array 
+
+    Inputs:
+        df: dataframe generated from the csv file containing the dart throwing data.
+        score_position_array: 400x450 array representing different sections of a dart board
+        score_number_array: 400x450 array representing different numbered sections of a dart board
+
+    
+    outputs:
+        frequency_array: 3D array that has all dartboard data added. Each level of the first demension represents a subsequent dart being thrown and the array usdated to reflect that'''
+
     #go through each throw and update the array
     #each array (first dimension) reflects one throw
     frequency_array = np.zeros((len(df), 400, 450))
@@ -228,6 +324,18 @@ def generate_frequency_array(df, score_position_array, score_number_array):
 
 
 def generate_images(df, frequency_array, boarders_y_coords, boarders_x_coords, directory):
+
+    '''Used to generate images that can be used to generate a movie showing a progressive heatmap. Each dart throw (first dimension of the frequency_array) has its 2D x,y coordinate array
+    converted into an image that is then saved in a specificed directory.
+
+    Inputs:
+        df: dataframe generated from the csv file containing the dart throwing data.
+        score_position_array: 400x450 array representing different sections of a dart board
+        score_number_array: 400x450 array representing different numbered sections of a dart board
+        boarders_y_coords: first dimension coodrinates for where dart board sections are located. Used to visually show dart board sections when generating a heatmap.
+        boarders_x_coords: second dimension coodrinates for where dart board sections are located. Used to visually show dart board sections when generating a heatmap.
+        directory: path and file name of where the images are to be saved'''
+    
     mode_position = df['position'].value_counts()
     mode_number = df['score'].value_counts()
 
