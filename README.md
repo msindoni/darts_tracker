@@ -12,7 +12,7 @@ The notebook will then allow you to upload your own data and generate an array f
 
 <img src="darts_images/heatmap_ex1.jpeg" width="300" height="300">
 
-**Figure 2**: *Example heatmap. The more red the section, the more times that section has been hit. This is 1D array (think x and y coordinates) displayed from a 3D array where the third dimenion is each throw.*
+**Figure 2**: *Example heatmap. The more red the section, the more times that section has been hit. This is 1D array (think x and y coordinates) displayed from a 3D array where the first dimenion is each throw.*
 
 # Getting Started
 ## Dependencies
